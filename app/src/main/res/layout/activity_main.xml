@@ -16,9 +16,21 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:title="AquaLevel"
-            app:titleCentered="true"
-            app:menu="@menu/top_app_bar_menu"/>
+            app:menu="@menu/top_app_bar_menu"
+            app:layout_scrollFlags="scroll|enterAlways|snap"
+            app:layout_scrollEffect="compress"
+            android:background="@color/toolbar">
+
+            <TextView
+                android:id="@+id/toolbarText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/toolbartitle"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:layout_gravity="center"/>
+
+        </com.google.android.material.appbar.MaterialToolbar>
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -35,7 +47,10 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="12dp">
+                android:layout_marginTop="12dp"
+                android:layout_marginHorizontal="12dp"
+                app:cardBackgroundColor="?cardBackgroundColor"
+                app:cardCornerRadius="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -43,11 +58,58 @@
                     android:orientation="vertical"
                     android:layout_marginVertical="20dp"
                     android:layout_marginHorizontal="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-thin"
+                        android:textStyle="bold"
+                        android:text="@string/water_tank"
+                        android:textColor="@color/cardtitle"
+                        android:textSize="20sp"
+                        android:layout_marginBottom="20dp"/>
                     
-                    <com.watertank.aqualevel.WaterTankView
-                        android:layout_width="193dp"
-                        android:layout_height="193dp"
-                        android:layout_gravity="center"/>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <com.watertank.aqualevel.WaterTankView
+                            android:layout_width="193dp"
+                            android:layout_height="193dp"
+                            android:layout_gravity="center"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="sans-serif-thin"
+                                android:text="@string/water_level"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:textAlignment="center"
+                                android:textColor="@color/cardtitle"
+                                android:textSize="20sp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="sans-serif-thin"
+                                android:textStyle="bold"
+                                android:text="0%"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:textAlignment="center"
+                                android:textColor="@color/cardtitle"
+                                android:textSize="50sp"/>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
@@ -56,7 +118,10 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="12dp">
+                android:layout_marginTop="12dp"
+                android:layout_marginHorizontal="12dp"
+                app:cardBackgroundColor="?cardBackgroundColor"
+                app:cardCornerRadius="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -65,8 +130,18 @@
                     android:layout_marginVertical="20dp"
                     android:layout_marginHorizontal="20dp">
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-thin"
+                        android:text="@string/water_consumption_graph"
+                        android:textStyle="bold"
+                        android:textColor="@color/cardtitle"
+                        android:textSize="20sp"
+                        android:layout_marginBottom="5dp"/>
+
                     <com.watertank.aqualevel.WaterGraphView
-                        android:layout_width="320dp"
+                        android:layout_width="match_parent"
                         android:layout_height="250dp"
                         android:layout_gravity="center"/>
 
@@ -77,7 +152,10 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="12dp">
+                android:layout_marginTop="12dp"
+                android:layout_marginHorizontal="12dp"
+                app:cardBackgroundColor="?cardBackgroundColor"
+                app:cardCornerRadius="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -98,7 +176,10 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="12dp">
+                android:layout_marginTop="12dp"
+                android:layout_marginHorizontal="12dp"
+                app:cardBackgroundColor="?cardBackgroundColor"
+                app:cardCornerRadius="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -119,7 +200,10 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="12dp">
+                android:layout_marginTop="12dp"
+                android:layout_marginHorizontal="12dp"
+                app:cardBackgroundColor="?cardBackgroundColor"
+                app:cardCornerRadius="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
