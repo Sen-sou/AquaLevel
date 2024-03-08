@@ -14,21 +14,19 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Random;
 
 public class WaterGraphView extends View {
 
     private Paint paintText, paintLine, paintPath, paintPathFill;
     private ArrayList<Float> percentValues;
-    private ArrayList<Integer> timeValues;
+    private int xAxisSize;
     private Path graphPath, graphPathFilled;
     private float[] pathExtreme;
     private final int[] colors = {Color.CYAN, Color.TRANSPARENT};
     private final float[] positions = {0.0f, 1.0f};
 
-    private HashMap<Integer, Float> timeYInvervalMem;
+    private HashMap<Integer, Float> timeYIntervalMem;
 
     public WaterGraphView(Context context) {
         super(context);
@@ -79,24 +77,18 @@ public class WaterGraphView extends View {
 
         // Initialize Water Graph X and Y values
         pathExtreme = new float[4];
-        int initVal = 24;
-        timeValues = new ArrayList<>(Collections.nCopies(++initVal, 5));
+        xAxisSize = 24;
         percentValues = new ArrayList<>();
-        timeYInvervalMem = new HashMap<>();
-        for (int index = 0; index < initVal - 1; index++) {
-            timeValues.set(index, index);
-//            percentValues.set(index, (float)index);
-        } timeValues.set(initVal - 1, 0);
-//        percentValues.set(i - 1, 100.0f);
+//        Random random = new Random();
+//        for (int i = 0; i < xAxisSize; i++) percentValues.add(random.nextFloat() * 100.0f);
+        timeYIntervalMem = new HashMap<>();
         updatePath(graphPath, false);
         updatePath(graphPathFilled, true);
     }
 
-    public void setAxisValues(ArrayList<Integer> timeValuesX, ArrayList<Float> percentValuesY) {
-        timeValues = new ArrayList<>(timeValuesX);
+    public void setAxisValues(ArrayList<Float> percentValuesY, int timeSize) {
         percentValues = new ArrayList<>(percentValuesY);
-        timeValues.add(timeValuesX.get(0));
-        percentValues.add(percentValuesY.get(0));
+        xAxisSize = timeSize;
         updatePath(graphPath, false);
         updatePath(graphPathFilled, true);
         invalidate();
@@ -111,20 +103,19 @@ public class WaterGraphView extends View {
 
     protected void updatePath(Path path, boolean fill) {
         path.reset();
-        int sizeX = timeValues.size();
         int sizeY = percentValues.size();
-        if (sizeX == 0 || sizeY == 0) return;
+        if (xAxisSize == 0 || sizeY == 0) return;
 
         // Calculate and Set Path Values
-        float yInc = 0.8f / (float)(sizeX - 1);
-        path.moveTo(getGraphX(yInc, 0), getGraphY(percentValues.get(0)));
-        pathExtreme[0] = getGraphX(yInc, 0);
+        float xInc = 0.8f / (float)xAxisSize;
+        path.moveTo(getGraphX(xInc, 0), getGraphY(percentValues.get(0)));
+        pathExtreme[0] = getGraphX(xInc, 0);
         pathExtreme[1] = getGraphY(percentValues.get(0));
         int i;
-        for (i = 1; i < sizeX && i < sizeY; i++) {
-            path.lineTo(getGraphX(yInc, i), getGraphY(percentValues.get(i)));
+        for (i = 1; i < xAxisSize && i < sizeY; i++) {
+            path.lineTo(getGraphX(xInc, i), getGraphY(percentValues.get(i)));
         }
-        pathExtreme[2] = getGraphX(yInc, i-1);
+        pathExtreme[2] = getGraphX(xInc, i-1);
         pathExtreme[3] = getGraphY(percentValues.get(i-1));
 
         if (fill) closePath(path);
@@ -137,19 +128,18 @@ public class WaterGraphView extends View {
     }
 
     protected float getYIntervalInc() {
-        int sizeX = timeValues.size() - 1;
         // Check and return for available values
-        if (timeYInvervalMem.containsKey(sizeX))
-            return timeYInvervalMem.get(sizeX);
+        if (timeYIntervalMem.containsKey(xAxisSize))
+            return timeYIntervalMem.get(xAxisSize);
         // Calculating required interval Factor
-        for (float i = (float)Math.ceil(sizeX / 10.0f);
-             i <= Math.floor(sizeX) / 2.0; i++) {
-            if (sizeX % i == 0.00f) {
-                timeYInvervalMem.put(sizeX, i);
+        for (float i = (float)Math.ceil(xAxisSize / 10.0f);
+             i <= Math.floor(xAxisSize) / 2.0; i++) {
+            if (xAxisSize % i == 0.00f) {
+                timeYIntervalMem.put(xAxisSize, i);
                 return i;
             }
         }
-        return (float)sizeX;
+        return (float)xAxisSize;
     }
 
     @Override
@@ -169,10 +159,11 @@ public class WaterGraphView extends View {
         control = 0; // Set for X Axis Time Calculation
         // Draw X Values
         for (float interval = 0.13f; interval <= 0.93001f;
-             interval += (getYIntervalInc() / (float)(timeValues.size()-1) * 0.8f)) {
-            canvas.drawText( timeValues.get(control) + "",
+             interval += (getYIntervalInc() / (float)xAxisSize * 0.8f)) {
+            canvas.drawText( control + "",
                     (interval - 0.0105f) * getWidth(), 0.95f * getHeight(), paintText);
             control += getYIntervalInc();
+            if (control == xAxisSize) control = 0;
         }
 
         // Draw Graph
