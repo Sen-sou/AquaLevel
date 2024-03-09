@@ -200,6 +200,31 @@
 
                     </LinearLayout>
 
+                    <RadioGroup
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:checkedButton="@+id/dayBtn"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.radiobutton.MaterialRadioButton
+                            android:id="@+id/dayBtn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="sans-serif-thin"
+                            android:text="Day Graph"
+                            android:textColor="@color/cardtitle"/>
+
+                        <com.google.android.material.radiobutton.MaterialRadioButton
+                            android:id="@+id/hourBtn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="20dp"
+                            android:fontFamily="sans-serif-thin"
+                            android:text="Hour Graph"
+                            android:textColor="@color/cardtitle"/>
+
+                    </RadioGroup>
+
                     <com.watertank.aqualevel.WaterGraphView
                         android:layout_width="match_parent"
                         android:layout_height="250dp"
