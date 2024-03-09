@@ -34,6 +34,15 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/linearProgressBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:showAnimationBehavior="inward"
+        app:hideAnimationBehavior="outward"
+        app:trackColor="@color/progressBar"
+        app:indicatorColor="@color/teal_200"/>
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -67,6 +76,7 @@
                         android:text="@string/water_tank"
                         android:textColor="@color/cardtitle"
                         android:textSize="20sp"
+                        android:layout_gravity="center_vertical"
                         android:layout_marginBottom="20dp"/>
                     
                     <LinearLayout
@@ -90,6 +100,7 @@
                                 android:fontFamily="sans-serif-thin"
                                 android:text="@string/water_level"
                                 android:layout_gravity="center"
+                                android:layout_marginTop="25dp"
                                 android:layout_weight="1"
                                 android:textAlignment="center"
                                 android:textColor="@color/cardtitle"
@@ -106,6 +117,26 @@
                                 android:textAlignment="center"
                                 android:textColor="@color/cardtitle"
                                 android:textSize="50sp"/>
+
+                            <com.google.android.material.divider.MaterialDivider
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_horizontal"
+                                android:layout_marginHorizontal="15dp"
+                                android:layout_marginTop="10dp"
+                                app:dividerColor="@color/divider" />
+
+                            <com.google.android.material.checkbox.MaterialCheckBox
+                                android:id="@+id/notifyLevelChkBox"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/notify_level"
+                                android:textStyle="bold"
+                                android:layout_gravity="center_horizontal"
+                                android:textColor="@color/cardtitle"
+                                android:fontFamily="sans-serif-thin"/>
+
+
 
                         </LinearLayout>
 
@@ -130,20 +161,51 @@
                     android:layout_marginVertical="20dp"
                     android:layout_marginHorizontal="20dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif-thin"
-                        android:text="@string/water_consumption_graph"
-                        android:textStyle="bold"
-                        android:textColor="@color/cardtitle"
-                        android:textSize="20sp"
-                        android:layout_marginBottom="5dp"/>
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="sans-serif-thin"
+                            android:text="@string/water_level_graph"
+                            android:textStyle="bold"
+                            android:textColor="@color/cardtitle"
+                            android:textSize="20sp"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginVertical="2dp"/>
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+
+                        <com.google.android.material.button.MaterialButton
+                            style="@style/aqua.IconButton"
+                            android:id="@+id/dateButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            app:icon="@drawable/calender_icon"
+                            app:iconSize="20dp"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            style="@style/aqua.IconButton"
+                            android:id="@+id/clockButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            app:icon="@drawable/clock_icon"
+                            app:iconSize="20dp"/>
+
+                    </LinearLayout>
 
                     <com.watertank.aqualevel.WaterGraphView
                         android:layout_width="match_parent"
                         android:layout_height="250dp"
                         android:layout_gravity="center"/>
+
+
 
                 </LinearLayout>
 
