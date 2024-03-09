@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Aqua Level</string>
     <string name="toolbartitle">AQUALEVEL</string>
+    <string name="water_tank">Water Tank</string>
+    <string name="water_level">Water Level</string>
+    <string name="water_consumption_graph">Water Consumption Graph</string>
 </resources>

@@ -43,10 +43,9 @@ public class WaterTankView extends View {
         tankSrc = new Rect(0, 0, 551, 551);
         tankDst = new Rect(0, 0, getWidth(), getHeight());
 
-        // TODO: Add behind water Water Level Text
         // Setup Water Draw
         waterPaint = new Paint();
-        waterPaint.setColor(Color.BLUE);
+        waterPaint.setColor(Color.CYAN);
         waterPaint.setStyle(Paint.Style.FILL);
         waterPaint.setAlpha(32);
         waterRect = new Rect((int)(0.15245f * getWidth()),
@@ -54,6 +53,8 @@ public class WaterTankView extends View {
                 (int)(0.84573f * getWidth()),
                 (int)(0.88566f * getHeight()));
         MAX_WATER_HEIGHT = (int)(0.76951f * getHeight());
+
+        setWaterLevel(40.0f);
     }
 
     public boolean setWaterLevel(float percentage) {
