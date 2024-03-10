@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -22,10 +23,12 @@ public class WaterTankView extends View {
 
     public WaterTankView(Context context) {
         super(context);
+        Log.d("APP_DEBUG_MESSAGE", "Constructor was called ");
     }
 
     public WaterTankView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        Log.d("APP_DEBUG_MESSAGE", "Constructor was called ");
     }
 
     @Override
@@ -54,7 +57,8 @@ public class WaterTankView extends View {
                 (int)(0.88566f * getHeight()));
         MAX_WATER_HEIGHT = (int)(0.76951f * getHeight());
 
-        setWaterLevel(40.0f);
+        setWaterLevel(0.0f);
+        Log.d("APP_DEBUG_MESSAGE", "Init was called ");
     }
 
     public boolean setWaterLevel(float percentage) {

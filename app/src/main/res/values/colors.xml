@@ -15,4 +15,5 @@
     <color name="divider">#6DBDBBBB</color>
     <color name="progressBar">#01706F</color>
     <color name="error">#EC0000</color>
+    <color name="aquaTransparent">#00FFFFFF</color>
 </resources>

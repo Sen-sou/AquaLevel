@@ -96,7 +96,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
                             app:icon="@drawable/notconnected_icon"
-                            android:text="Can't Connect to Server"
                             app:iconPadding="5dp"
                             app:iconSize="20dp"
                             app:iconTint="@color/text"/>
@@ -173,6 +172,7 @@
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
+                android:id="@+id/waterGraphCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
@@ -257,6 +257,7 @@
                     </RadioGroup>
 
                     <com.watertank.aqualevel.WaterGraphView
+                        android:id="@+id/waterGraph"
                         android:layout_width="match_parent"
                         android:layout_height="250dp"
                         android:layout_gravity="center"/>
