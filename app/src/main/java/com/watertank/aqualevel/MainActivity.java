@@ -8,6 +8,8 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.view.View;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.google.android.material.button.MaterialButton;
@@ -19,10 +21,12 @@ public class MainActivity extends AppCompatActivity {
 
     TextView toolbarText;
     MaterialButton dateButton, clockButton;
+    RadioGroup graphTime;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         toolbarText = findViewById(R.id.toolbarText);
         SpannableString spannableString = new SpannableString("AQUALEVEL");
@@ -36,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         datePicker.addOnPositiveButtonClickListener(
-                selection -> dateButton.setText("  " + datePicker.getHeaderText())
+                selection -> dateButton.setText(datePicker.getHeaderText())
         );
 
         MaterialTimePicker timePicker = new MaterialTimePicker.Builder()
@@ -47,18 +51,34 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         timePicker.addOnPositiveButtonClickListener(
-                v -> clockButton.setText("  " + timePicker.getHour())
+                v -> clockButton.setText(((Integer)timePicker.getHour()).toString())
         );
 
         FragmentManager fragmentManager = getSupportFragmentManager();
 
         dateButton = findViewById(R.id.dateButton);
         clockButton = findViewById(R.id.clockButton);
+        clockButton.setVisibility(View.GONE);
 
         dateButton.setOnClickListener(v -> datePicker.show(fragmentManager, "MATERIAL_DATE_PICKER"));
         clockButton.setOnClickListener(v -> timePicker.show(fragmentManager, "MATERIAL_TIME_PICKER"));
 
-
+        graphTime = findViewById(R.id.graphTimeRadio);
+        graphTime.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId) {
+                    case R.id.dayBtn:
+                        clockButton.setVisibility(View.GONE);
+                        break;
+                    case R.id.hourBtn:
+                        clockButton.setVisibility(View.VISIBLE);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
 
 
 
