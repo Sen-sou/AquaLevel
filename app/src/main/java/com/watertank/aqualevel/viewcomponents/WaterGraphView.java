@@ -1,4 +1,4 @@
-package com.watertank.aqualevel;
+package com.watertank.aqualevel.viewcomponents;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -86,9 +86,13 @@ public class WaterGraphView extends View {
         updatePath(graphPathFilled, true);
     }
 
-    public void setAxisValues(ArrayList<Float> percentValuesY, int timeSize) {
+    public void setXAxisSize(int xAxisSize) {
+        this.xAxisSize = xAxisSize;
+        invalidate();
+    }
+
+    public void setYAxisValues(ArrayList<Float> percentValuesY) {
         percentValues = new ArrayList<>(percentValuesY);
-        xAxisSize = timeSize;
         updatePath(graphPath, false);
         updatePath(graphPathFilled, true);
         invalidate();

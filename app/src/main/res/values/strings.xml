@@ -3,5 +3,6 @@
     <string name="toolbartitle">AQUALEVEL</string>
     <string name="water_tank">Water Tank</string>
     <string name="water_level">Water Level</string>
-    <string name="water_consumption_graph">Water Consumption Graph</string>
+    <string name="water_level_graph">Water Level Graph</string>
+    <string name="notify_level">Notify Level</string>
 </resources>
