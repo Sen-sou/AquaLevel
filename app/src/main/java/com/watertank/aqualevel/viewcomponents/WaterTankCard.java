@@ -1,14 +1,12 @@
-package com.watertank.aqualevel;
+package com.watertank.aqualevel.viewcomponents;
 
 import android.content.Context;
 import android.view.View;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.core.content.res.ResourcesCompat;
-
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.checkbox.MaterialCheckBox;
+import com.watertank.aqualevel.R;
 
 import java.util.Locale;
 
@@ -37,7 +35,7 @@ public class WaterTankCard {
         waterPercentage = card.findViewById(R.id.waterPercentage);
         notifyLevelCheckBox = card.findViewById(R.id.notifyLevelChkBox);
 
-        serverStatusMessage = "Disconnected from Server";
+        serverStatusMessage = "Not Connected to Server";
         statusShow = true;
         serverConnectButton.setOnClickListener(v -> {
             if (statusShow) serverConnectButton.setText(serverStatusMessage);

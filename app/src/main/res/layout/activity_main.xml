@@ -107,7 +107,7 @@
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
 
-                        <com.watertank.aqualevel.WaterTankView
+                        <com.watertank.aqualevel.viewcomponents.WaterTankView
                             android:id="@+id/waterTank"
                             android:layout_width="193dp"
                             android:layout_height="193dp"
@@ -256,7 +256,7 @@
 
                     </RadioGroup>
 
-                    <com.watertank.aqualevel.WaterGraphView
+                    <com.watertank.aqualevel.viewcomponents.WaterGraphView
                         android:id="@+id/waterGraph"
                         android:layout_width="match_parent"
                         android:layout_height="250dp"

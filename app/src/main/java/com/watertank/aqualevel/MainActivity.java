@@ -1,22 +1,19 @@
 package com.watertank.aqualevel;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentManager;
+import androidx.room.Room;
 
 import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
-import android.util.Log;
-import android.view.View;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.datepicker.MaterialDatePicker;
-import com.google.android.material.timepicker.MaterialTimePicker;
-import com.google.android.material.timepicker.TimeFormat;
+import com.watertank.aqualevel.sensordataroom.SensorDataDatabase;
+import com.watertank.aqualevel.viewcomponents.WaterGraphCard;
+import com.watertank.aqualevel.viewcomponents.WaterTankCard;
 
 public class MainActivity extends AppCompatActivity {
     MaterialButton dateButton, clockButton;
@@ -27,9 +24,17 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         setToolbarTextEffect();
+        SensorDataDatabase db = Room.databaseBuilder(
+                getApplicationContext(), SensorDataDatabase.class, "SensorData").build();
 
-        WaterTankCard waterTankCard = new WaterTankCard(getBaseContext(), findViewById(R.id.waterTankCard));
+        WaterTankCard waterTankCard = new WaterTankCard(
+                getApplicationContext(), findViewById(R.id.waterTankCard));
         waterTankCard.init();
+
+        WaterGraphCard waterGraphCard = new WaterGraphCard(
+                getApplicationContext(), getSupportFragmentManager(), findViewById(R.id.waterGraphCard), db);
+        waterGraphCard.init();
+
 
     }
 

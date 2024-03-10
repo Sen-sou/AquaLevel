@@ -1,4 +1,4 @@
-package com.watertank.aqualevel;
+package com.watertank.aqualevel.viewcomponents;
 
 import android.content.Context;
 import android.graphics.Canvas;
