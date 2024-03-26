@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -17,19 +16,19 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:menu="@menu/top_app_bar_menu"
-            app:layout_scrollFlags="scroll|enterAlways|snap"
+            android:background="@color/toolbar"
             app:layout_scrollEffect="compress"
-            android:background="@color/toolbar">
+            app:layout_scrollFlags="scroll|enterAlways|snap"
+            app:menu="@menu/top_app_bar_menu">
 
             <TextView
                 android:id="@+id/toolbarText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:text="@string/toolbartitle"
-                android:textStyle="bold"
                 android:textSize="20sp"
-                android:layout_gravity="center"/>
+                android:textStyle="bold" />
 
         </com.google.android.material.appbar.MaterialToolbar>
 
@@ -39,10 +38,10 @@
         android:id="@+id/linearProgressBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:showAnimationBehavior="inward"
         app:hideAnimationBehavior="outward"
-        app:trackColor="@color/progressBar"
-        app:indicatorColor="@color/teal_200"/>
+        app:indicatorColor="@color/teal_200"
+        app:showAnimationBehavior="inward"
+        app:trackColor="@color/progressBar" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -58,17 +57,17 @@
                 android:id="@+id/waterTankCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
                 android:layout_marginHorizontal="12dp"
+                android:layout_marginTop="12dp"
                 app:cardBackgroundColor="?cardBackgroundColor"
                 app:cardCornerRadius="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
+                    android:layout_marginHorizontal="20dp"
                     android:layout_marginVertical="20dp"
-                    android:layout_marginHorizontal="20dp">
+                    android:orientation="vertical">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -78,12 +77,12 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginBottom="20dp"
                             android:fontFamily="sans-serif-thin"
-                            android:textStyle="bold"
                             android:text="@string/water_tank"
                             android:textColor="@color/cardtitle"
                             android:textSize="20sp"
-                            android:layout_marginBottom="20dp"/>
+                            android:textStyle="bold" />
 
                         <View
                             android:layout_width="0dp"
@@ -98,10 +97,10 @@
                             app:icon="@drawable/notconnected_icon"
                             app:iconPadding="5dp"
                             app:iconSize="20dp"
-                            app:iconTint="@color/text"/>
+                            app:iconTint="@color/text" />
 
                     </LinearLayout>
-                    
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -111,7 +110,7 @@
                             android:id="@+id/waterTank"
                             android:layout_width="193dp"
                             android:layout_height="193dp"
-                            android:layout_gravity="center"/>
+                            android:layout_gravity="center" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -121,27 +120,27 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="sans-serif-thin"
-                                android:text="@string/water_level"
                                 android:layout_gravity="center"
                                 android:layout_marginTop="25dp"
                                 android:layout_weight="1"
+                                android:fontFamily="sans-serif-thin"
+                                android:text="@string/water_level"
                                 android:textAlignment="center"
                                 android:textColor="@color/cardtitle"
-                                android:textSize="20sp"/>
+                                android:textSize="20sp" />
 
                             <TextView
                                 android:id="@+id/waterPercentage"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="sans-serif-thin"
-                                android:textStyle="bold"
-                                android:text="0%"
                                 android:layout_gravity="center"
                                 android:layout_weight="1"
+                                android:fontFamily="sans-serif-thin"
+                                android:text="0%"
                                 android:textAlignment="center"
                                 android:textColor="@color/cardtitle"
-                                android:textSize="50sp"/>
+                                android:textSize="50sp"
+                                android:textStyle="bold" />
 
                             <com.google.android.material.divider.MaterialDivider
                                 android:layout_width="match_parent"
@@ -155,12 +154,11 @@
                                 android:id="@+id/notifyLevelChkBox"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/notify_level"
-                                android:textStyle="bold"
                                 android:layout_gravity="center_horizontal"
+                                android:fontFamily="sans-serif-thin"
+                                android:text="@string/notify_level"
                                 android:textColor="@color/cardtitle"
-                                android:fontFamily="sans-serif-thin"/>
-
+                                android:textStyle="bold" />
 
 
                         </LinearLayout>
@@ -175,17 +173,17 @@
                 android:id="@+id/waterGraphCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
                 android:layout_marginHorizontal="12dp"
+                android:layout_marginTop="12dp"
                 app:cardBackgroundColor="?cardBackgroundColor"
                 app:cardCornerRadius="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
+                    android:layout_marginHorizontal="20dp"
                     android:layout_marginVertical="20dp"
-                    android:layout_marginHorizontal="20dp">
+                    android:orientation="vertical">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -195,13 +193,13 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginVertical="2dp"
                             android:fontFamily="sans-serif-thin"
                             android:text="@string/water_level_graph"
-                            android:textStyle="bold"
                             android:textColor="@color/cardtitle"
                             android:textSize="20sp"
-                            android:layout_gravity="center_vertical"
-                            android:layout_marginVertical="2dp"/>
+                            android:textStyle="bold" />
 
                         <View
                             android:layout_width="0dp"
@@ -209,24 +207,24 @@
                             android:layout_weight="1" />
 
                         <com.google.android.material.button.MaterialButton
-                            style="@style/aqua.IconButton"
                             android:id="@+id/dateButton"
+                            style="@style/aqua.IconButton"
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
                             android:text="Date"
                             app:icon="@drawable/calender_icon"
-                            app:iconSize="20dp"
-                            app:iconPadding="4dp"/>
+                            app:iconPadding="4dp"
+                            app:iconSize="20dp" />
 
                         <com.google.android.material.button.MaterialButton
-                            style="@style/aqua.IconButton"
                             android:id="@+id/clockButton"
+                            style="@style/aqua.IconButton"
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
                             android:text="Time"
                             app:icon="@drawable/clock_icon"
-                            app:iconSize="20dp"
-                            app:iconPadding="4dp"/>
+                            app:iconPadding="4dp"
+                            app:iconSize="20dp" />
 
                     </LinearLayout>
 
@@ -243,7 +241,7 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="sans-serif-thin"
                             android:text="Day Graph"
-                            android:textColor="@color/cardtitle"/>
+                            android:textColor="@color/cardtitle" />
 
                         <com.google.android.material.radiobutton.MaterialRadioButton
                             android:id="@+id/hourBtn"
@@ -252,7 +250,7 @@
                             android:layout_marginStart="20dp"
                             android:fontFamily="sans-serif-thin"
                             android:text="Hour Graph"
-                            android:textColor="@color/cardtitle"/>
+                            android:textColor="@color/cardtitle" />
 
                     </RadioGroup>
 
@@ -260,15 +258,78 @@
                         android:id="@+id/waterGraph"
                         android:layout_width="match_parent"
                         android:layout_height="250dp"
-                        android:layout_gravity="center"/>
-
-
+                        android:layout_gravity="center" />
 
                 </LinearLayout>
 
             </androidx.cardview.widget.CardView>
 
+            <androidx.cardview.widget.CardView
+                android:id="@+id/preferenceCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="12dp"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="?cardBackgroundColor"
+                app:cardCornerRadius="16dp">
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginVertical="20dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginVertical="2dp"
+                            android:fontFamily="sans-serif-thin"
+                            android:text="Preferences"
+                            android:textColor="@color/cardtitle"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/increaseBtn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="10dp"
+                            android:layout_weight="1"
+                            android:text="Increase Level" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/decreaseBtn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="10dp"
+                            android:layout_weight="1"
+                            android:text="Decrease Level" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
 
         </LinearLayout>
 
