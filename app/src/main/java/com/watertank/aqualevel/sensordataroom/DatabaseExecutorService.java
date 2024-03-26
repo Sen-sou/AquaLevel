@@ -2,6 +2,7 @@ package com.watertank.aqualevel.sensordataroom;
 
 import android.content.Context;
 import android.se.omapi.Session;
+import android.util.Log;
 
 import androidx.room.Room;
 
@@ -33,6 +34,8 @@ public class DatabaseExecutorService {
         }
         return INSTANCE;
     }
+
+
 
     private boolean runExceptionCheck(Future<Boolean> future) {
         try {
@@ -119,6 +122,7 @@ public class DatabaseExecutorService {
             }
         } catch (InterruptedException e) {
             executorService.shutdownNow();
+            e.printStackTrace();
         }
     }
 }
