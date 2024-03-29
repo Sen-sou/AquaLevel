@@ -21,20 +21,19 @@ import com.watertank.aqualevel.networkService.NetworkClientService;
 import com.watertank.aqualevel.sensordataroom.DatabaseExecutorService;
 import com.watertank.aqualevel.sensordataroom.SensorData;
 import com.watertank.aqualevel.sensordataroom.SensorDataDatabase;
+import com.watertank.aqualevel.viewcomponents.PreferenceCard;
 import com.watertank.aqualevel.viewcomponents.WaterGraphCard;
 import com.watertank.aqualevel.viewcomponents.WaterTankCard;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
-public class MainActivity extends AppCompatActivity {
-    private MaterialButton dateButton, clockButton, buttonIncrease, buttonDecrease;
+public class MainActivity extends AppCompatActivity { // MainActivity.this vs getApplicationContext
     private WaterTankCard waterTankCard;
     private WaterGraphCard waterGraphCard;
-    private RadioGroup graphTime;
-    private float percentage = 0;
+    private PreferenceCard preferenceCard;
     private NetworkClientService networkClientService;
-    private ArrayList<DataListener> serverDataListeners;
-    private ArrayList<DataListener> serverDirectDataListeners;
+    private HashMap<String, DataListener> serverDataListeners, serverDirectDataListeners;
     private ServiceConnection serviceConnection;
 
     @Override
@@ -46,10 +45,10 @@ public class MainActivity extends AppCompatActivity {
         setToolbarTextEffect();
         getWindow().setNavigationBarColor(getResources().getColor(R.color.mainBackground, getTheme()));
 
-        DatabaseExecutorService databaseService = DatabaseExecutorService.getInstance(getApplicationContext());
+        DatabaseExecutorService.getInstance(MainActivity.this);
 
-        serverDataListeners = new ArrayList<>();
-        serverDirectDataListeners = new ArrayList<>();
+        serverDataListeners = new HashMap<>();
+        serverDirectDataListeners = new HashMap<>();
 
         waterTankCard = new WaterTankCard(
                 getApplicationContext(),
@@ -63,25 +62,14 @@ public class MainActivity extends AppCompatActivity {
                 getApplicationContext(),
                 getSupportFragmentManager(),
                 findViewById(R.id.waterGraphCard),
-                SensorDataDatabase.getInstance(getApplicationContext())
+                serverDataListeners,
+                serverDirectDataListeners,
+                findViewById(R.id.linearProgressBar)
         );
         waterGraphCard.init();
 
-        SensorData sensorData = new SensorData();
-
-        buttonIncrease = findViewById(R.id.increaseBtn);
-        buttonIncrease.setOnClickListener(v -> {
-            percentage += 10.0f;
-            waterTankCard.setWaterPercentage(percentage);
-            sensorData.setData(percentage);
-            databaseService.insert(sensorData);
-        });
-        buttonDecrease = findViewById(R.id.decreaseBtn);
-        buttonDecrease.setOnClickListener(v -> {
-            percentage -= 10.0f;
-            waterTankCard.setWaterPercentage(percentage);
-            databaseService.resetTable(getApplicationContext());
-        });
+        preferenceCard = new PreferenceCard(MainActivity.this, findViewById(R.id.preferenceCard));
+        preferenceCard.init();
 
         Intent serviceIntent = new Intent(getApplicationContext(), NetworkClientService.class);
         serviceConnection = new ServiceConnection() {
@@ -91,7 +79,9 @@ public class MainActivity extends AppCompatActivity {
                         .setDataListener(serverDataListeners, serverDirectDataListeners)
                         .setSocketConnection("192.168.0.120", 80)
                         .setConnectionTimeout(10000);
+                preferenceCard.setNetworkServiceObject(networkClientService);
                 waterTankCard.setNetworkServiceObject(networkClientService);
+                waterGraphCard.setNetworkServiceObject(networkClientService);
             }
             @Override
             public void onServiceDisconnected(ComponentName name) {

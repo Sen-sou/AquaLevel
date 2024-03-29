@@ -41,6 +41,7 @@
         app:hideAnimationBehavior="outward"
         app:indicatorColor="@color/teal_200"
         app:showAnimationBehavior="inward"
+        android:background="@color/aquaTransparent"
         app:trackColor="@color/progressBar" />
 
     <ScrollView
@@ -81,7 +82,7 @@
                             android:fontFamily="sans-serif-thin"
                             android:text="@string/water_tank"
                             android:textColor="@color/cardtitle"
-                            android:textSize="20sp"
+                            android:textSize="18sp"
                             android:textStyle="bold" />
 
                         <View
@@ -154,6 +155,7 @@
                                 android:id="@+id/notifyLevelChkBox"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
                                 android:layout_gravity="center_horizontal"
                                 android:fontFamily="sans-serif-thin"
                                 android:text="@string/notify_level"
@@ -188,6 +190,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
                         android:orientation="horizontal">
 
                         <TextView
@@ -198,7 +201,7 @@
                             android:fontFamily="sans-serif-thin"
                             android:text="@string/water_level_graph"
                             android:textColor="@color/cardtitle"
-                            android:textSize="20sp"
+                            android:textSize="18sp"
                             android:textStyle="bold" />
 
                         <View
@@ -269,7 +272,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="12dp"
-                android:layout_marginTop="12dp"
+                android:layout_marginVertical="12dp"
                 app:cardBackgroundColor="?cardBackgroundColor"
                 app:cardCornerRadius="16dp">
 
@@ -291,7 +294,7 @@
                             android:layout_gravity="center_vertical"
                             android:layout_marginVertical="2dp"
                             android:fontFamily="sans-serif-thin"
-                            android:text="Preferences"
+                            android:text="PREFERENCES"
                             android:textColor="@color/cardtitle"
                             android:textSize="20sp"
                             android:textStyle="bold" />
@@ -306,24 +309,82 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="5dp"
                         android:layout_marginTop="5dp"
                         android:orientation="horizontal">
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/increaseBtn"
+                        <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="10dp"
-                            android:layout_weight="1"
-                            android:text="Increase Level" />
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginVertical="2dp"
+                            android:fontFamily="sans-serif-thin"
+                            android:text="Update Interval"
+                            android:textColor="@color/cardtitle"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/intervalTxtView"
+                            style="?attr/materialButtonOutlinedStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:text="Interval" />
+
+
+                    </LinearLayout>
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/alarmSwitch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textOn="On"
+                        android:textOff="Off"
+                        android:checked="false"
+                        android:text="Notify By Alarm"
+                        android:layout_marginHorizontal="5dp"
+                        android:theme="@style/Theme.AquaLevel.switch"/>
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/syncSwitch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textOn="On"
+                        android:textOff="Off"
+                        android:checked="false"
+                        android:text="Auto Sync History"
+                        android:layout_marginHorizontal="5dp"
+                        android:theme="@style/Theme.AquaLevel.switch"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="5dp"
+                        android:orientation="horizontal">
 
                         <com.google.android.material.button.MaterialButton
-                            android:id="@+id/decreaseBtn"
+                            android:id="@+id/updateBtn"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginHorizontal="10dp"
                             android:layout_weight="1"
-                            android:text="Decrease Level" />
+                            android:text="Sync History"
+                            android:textColor="@color/card"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/deleteBtn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="10dp"
+                            android:layout_weight="1"
+                            android:text="Clear History"
+                            android:textColor="@color/card"/>
 
                     </LinearLayout>
 

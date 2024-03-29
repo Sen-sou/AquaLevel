@@ -1,15 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="AquaTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="AquaTheme.dark" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">@color/teal_700</item>
         <item name="colorPrimaryDark">@color/teal_200</item>
         <item name="colorAccent">@color/white</item>
         <item name="android:navigationBarColor">@color/toolbar</item>
 
-        <!--this item is invoked in app theme to override the contained material button-->
         <item name="materialButtonStyle">@style/aqua.IconButton</item>
+        <item name="android:popupBackground">@drawable/aqua_popup_background</item>
+
     </style>
-    <!--Base application theme ends here-->
+
+    <style name="AquaTheme.popup" parent="Widget.Material3.PopupMenu">
+        <item name="android:popupBackground">@drawable/aqua_popup_background</item>
+        <item name="android:textColor">@color/text</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="Theme.AquaLevel.dialog" parent="MaterialAlertDialog.Material3">
+        <item name="materialAlertDialogTitleTextStyle">@style/Theme.AquaLevel.dialog.title.text</item>
+    </style>
+
+    <style name="Theme.AquaLevel.dialog.title.text" parent="MaterialAlertDialog.Material3.Title.Text">
+        <item name="android:textColor">@color/teal_700</item>
+        <item name="android:textSize">25sp</item>
+    </style>
 
     <style name="aqua.IconButton" parent="Widget.Material3.Button.IconButton">
         <item name="android:padding">2dp</item>

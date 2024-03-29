@@ -1,7 +1,9 @@
 package com.watertank.aqualevel.networkService;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -15,24 +17,25 @@ import androidx.annotation.Nullable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class NetworkClientService extends Service {
-    private ArrayList<DataListener> dataListeners;
-    private ArrayList<DataListener> directDataListeners;
-    private ConcurrentLinkedQueue<String> responseList;
-    ConcurrentLinkedQueue<String> requestList;
-    // create a task in the main thread which sends data to all the listeners
-    // get message from the main thread to send that message to the server
+//    private ArrayList<DataListener> dataListeners, directDataListeners;
+    private HashMap<String, DataListener> dataListeners, directDataListeners;
+    private ConcurrentLinkedQueue<String> responseList, requestList;
     private ExecutorService receiverThread, senderThread;
     private Handler mainHandler;
 
@@ -44,8 +47,13 @@ public class NetworkClientService extends Service {
     private PrintWriter out;
     private volatile boolean connected = false;
     private boolean connecting = false;
-    private int connectionTimeout = 10000;
-    private boolean processFlag = false;
+    private int connectionTimeout = 15000;
+    private volatile boolean processFlag = false;
+
+    private int lastReadByte = 0;
+    private int logCriticalSize = 10;
+    private int allowLog = 0;
+    private int dataGetInterval = 1;
 
 
     public class ClientServiceBinder extends Binder {
@@ -55,7 +63,7 @@ public class NetworkClientService extends Service {
     }
     private final IBinder binder = new ClientServiceBinder();
 
-    public NetworkClientService setDataListener(ArrayList<DataListener> listeners, ArrayList<DataListener> directListeners) {
+    public NetworkClientService setDataListener(HashMap<String, DataListener> listeners, HashMap<String, DataListener> directListeners) {
         this.dataListeners = listeners;
         this.directDataListeners = directListeners;
         return NetworkClientService.this;
@@ -81,6 +89,24 @@ public class NetworkClientService extends Service {
         senderThread.submit(this::connectToServer);
     }
 
+    public void addRequest(String request) {
+        requestList.add(request);
+    }
+
+    public void setSocketTimeout(int timeout) {
+        if (!connected) return;
+        this.connectionTimeout = timeout;
+        try {
+            serverSocket.setSoTimeout(connectionTimeout);
+        } catch (SocketException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void sendInMessage(String message) {
+        mainHandler.sendMessage(Message.obtain(mainHandler, 2, message));
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -88,13 +114,20 @@ public class NetworkClientService extends Service {
         senderThread = Executors.newSingleThreadExecutor();
         responseList = new ConcurrentLinkedQueue<>();
         requestList = new ConcurrentLinkedQueue<>();
+
+        // Access Variables
+        SharedPreferences preferences = getApplicationContext().getSharedPreferences("Aqua_Client", Context.MODE_PRIVATE);
+        lastReadByte = preferences.getInt("lastReadByte", 0);
+        dataGetInterval = preferences.getInt("dataGetInterval", 1);
+        allowLog = preferences.getBoolean("autoSyncState", false) ? 1 : 0;
+
         mainHandler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 String received = (String) msg.obj;
                 switch (msg.what) {
                     case 1:
-                        Log.d("NETWORK CLIENT SERVICE", "this ran");
+//                        Log.d("NETWORK CLIENT SERVICE", "this ran in " + Thread.currentThread().getName());
                         post(() -> inform());
                         break;
                     case 2:
@@ -150,74 +183,65 @@ public class NetworkClientService extends Service {
     }
 
     private void readServer() {
-        String response = "";
-        Message msg = new Message();
-        msg.what = 1;
+        StringBuilder response = new StringBuilder(10000);
         while (connected) {
             try {
-                response = in.readLine();
+                response.append(in.readLine()).append("\n");
             } catch (IOException e) {
                 if (e instanceof SocketTimeoutException) {
-                    Log.d("READ_SERVER", "Socket timeout exception occurred");
+//                    Log.d("READ_SERVER", "Socket timeout exception occurred");
                     connected = false;
                 }
             }
-            if (response != null && !response.isEmpty()) { // join strings of same command and separate different ones
-                responseList.add(response);
-                processFlag = true;
-//                Log.d("READ_SERVER", "Reading Data");
-            } else if (processFlag && (responseList.size() > 0)) {
-//                Log.d("READ_SERVER", "Send for Process");
-                mainHandler.sendMessage(msg);
-                processFlag = false;
-                response = "";
+            if (response.toString().endsWith(">\n")) {
+                responseList.add(response.toString());
+                Log.d("CLIENT", "readServer: " + response);
+                response.setLength(0);
+                if (!processFlag) {
+                    mainHandler.sendMessage(Message.obtain(mainHandler, 1));
+                }
             }
         }
         senderThread.submit(this::connectToServer);
     }
 
     private void requestServer() {
-        Iterator<String> iterator;
+        String request;
         while (connected) {
-            if (!requestList.isEmpty()) {
-                iterator = requestList.iterator();
-                while (iterator.hasNext()) {
-                    out.println(iterator.next());
-                    iterator.remove();
-                }
+            while (requestList.size() > 0) {
+                request = requestList.poll();
+                out.println(request);
             }
         }
     }
 
-    private void inform() { // Direct Response(in message), From Response List()
-        if (responseList.size() == 0 || dataListeners.size() == 0) return;
-        Iterator<String> iterator = responseList.iterator();
-        String response;
-        while (iterator.hasNext()) {
-            response = iterator.next(); // can use hashmap, with command as keys
-            for (int i = 1; i < dataListeners.size(); i++) {
-                dataListeners.get(i).listen(response);
-            }
-            iterator.remove();
+    private void inform() {
+        processFlag = responseList.size() != 0 && dataListeners.size() != 0;
+        String response, command, data;
+        while (responseList.size() > 0) {
+            response = responseList.poll();
+            if (response == null) continue;
+            // Parse Response
+            command = response.substring(response.indexOf("<") + 1, response.indexOf("/"));
+            data = response.substring(response.indexOf("/") + 1, response.indexOf(">"));
+            if (dataListeners.containsKey(command)) dataListeners.get(command).listen(data);
         }
+        processFlag = false;
     }
-    private void directInform(String msg) {
-        for (int i = 0; i < directDataListeners.size(); i++) {
-            directDataListeners.get(i).listen(msg);
-        }
+    private void directInform(String response) {
+        if (response == null) return;
+        String command, data;
+        command = response.substring(response.indexOf("<") + 1, response.indexOf("/"));
+        data = response.substring(response.indexOf("/") + 1, response.indexOf(">"));
+        if (directDataListeners.containsKey(command)) directDataListeners.get(command).listen(data);
     }
 
     private void connectToServer() { // Add retry button in UI | 
         int sleepTime = 1000;
         boolean streamConnection = false;
         connecting = true;
-        Message status1 = new Message();
-        Message status2 = new Message();
-        status1.what = 2;
-        status2.what = 2;
 
-        status1.obj = "connectionStatus/1";
-        mainHandler.sendMessage(status1);
+        mainHandler.sendMessage(Message.obtain(mainHandler, 2, "<connectionStatus/1>"));
 
         // Check for previous Socket Connection
         if (serverSocket != null) {
@@ -273,16 +297,20 @@ public class NetworkClientService extends Service {
                 e.printStackTrace();
             }
         }
+        connecting = false;
+
         if (connected && streamConnection){
-            Log.d("CLIENT", "Connected to the Server"); // Check Server Validity
-            status2.obj = "connectionStatus/2";
+            Log.d("CLIENT", "Connected to the Serv`er"); // Check Server Validity
+            addRequest("<setConfig/"
+                    + "dataGetInterval:" + dataGetInterval
+                    + ":allowLog:" + allowLog
+                    + ":logCriticalSize:" + logCriticalSize
+                    + ":lastReadByte:" + lastReadByte
+                    + ">");
+            mainHandler.sendMessage(Message.obtain(mainHandler, 2, "<connectionStatus/2>"));
         } else {
             Log.d("CLIENT", "Couldn't Connect to Server");
-            status2.obj = "connectionStatus/0";
+            mainHandler.sendMessage(Message.obtain(mainHandler, 2, "<connectionStatus/0>"));
         }
-
-        mainHandler.sendMessageDelayed(status2, 500);
-        connecting = false;
     }
-
 }

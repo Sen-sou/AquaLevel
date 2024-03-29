@@ -12,7 +12,8 @@
     <color name="card">#202020</color>
     <color name="cardtitle">#93A0A7</color>
     <color name="text">#A1A7A7</color>
-    <color name="divider">#6DBDBBBB</color>
+    <color name="track">#939393</color>
+    <color name="divider">#52BDBBBB</color>
     <color name="progressBar">#01706F</color>
     <color name="error">#EC0000</color>
     <color name="aquaTransparent">#00FFFFFF</color>

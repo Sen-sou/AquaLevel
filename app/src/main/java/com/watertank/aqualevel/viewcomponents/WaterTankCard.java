@@ -1,6 +1,7 @@
 package com.watertank.aqualevel.viewcomponents;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Handler;
@@ -21,13 +22,15 @@ import com.watertank.aqualevel.networkService.DataListener;
 import com.watertank.aqualevel.networkService.NetworkClientService;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
 
 public class WaterTankCard {
 
     private final Context context;
-    private final ArrayList<DataListener> serverDataListeners;
-    private final ArrayList<DataListener> serverDirectDataListeners;
+//    private final ArrayList<DataListener> serverDataListeners;
+//    private final ArrayList<DataListener> serverDirectDataListeners;
+    private HashMap<String, DataListener> serverDataListeners, serverDirectDataListeners;
     private final View card;
 
     private NetworkClientService networkClientService;
@@ -42,12 +45,18 @@ public class WaterTankCard {
     private TextView waterPercentage;
     private MaterialCheckBox notifyLevelCheckBox;
 
+    private SharedPreferences preferences;
+    private SharedPreferences.Editor prefEdit;
+    private boolean notifyCheck;
 
-    public WaterTankCard(Context context, View rootView, ArrayList<DataListener> dataListeners, ArrayList<DataListener> directDataListeners) {
+
+    public WaterTankCard(Context context, View rootView, HashMap<String, DataListener> dataListeners, HashMap<String, DataListener> directDataListeners) {
         this.context = context;
         this.card = rootView;
         this.serverDataListeners = dataListeners;
         this.serverDirectDataListeners = directDataListeners;
+        this.preferences = context.getSharedPreferences("Aqua_Client", Context.MODE_PRIVATE);
+        this.prefEdit = this.preferences.edit();
     }
 
     public void init() {
@@ -56,8 +65,10 @@ public class WaterTankCard {
         waterPercentage = card.findViewById(R.id.waterPercentage);
         notifyLevelCheckBox = card.findViewById(R.id.notifyLevelChkBox);
 
+        notifyCheck = preferences.getBoolean("notifyState", false);
 
-        // Set Server Status Button
+
+        // Set Server Status
         serverStatusMessage = "Couldn't Connect to Server";
         statusShow = false;
         serverConnectButton.setOnClickListener(v -> {
@@ -73,21 +84,22 @@ public class WaterTankCard {
         serverConnecting = (AnimationDrawable) ResourcesCompat.getDrawable(
                 context.getResources(), R.drawable.wifi_animation, context.getTheme());
 
-        serverDirectDataListeners.add(
-                received -> {
-                    if (received.contains("connectionStatus"))
-                        setServerConnectionStatus(
-                                Integer.parseInt(received.substring(received.indexOf('/')+1))
-                        );
-                }
-        );
+        serverDirectDataListeners.put("connectionStatus",
+                received -> setServerConnectionStatus(Integer.parseInt(received)));
+
+        // Set Tank Level Listener
+        serverDataListeners.put("sensorRead",
+                received -> setWaterPercentage(Float.parseFloat(received)));
 
         // Set Notify Button
+        notifyLevelCheckBox.setChecked(notifyCheck);
         notifyLevelCheckBox.addOnCheckedStateChangedListener((checkBox, state) -> {
+            if (networkClientService.getConnectionStatus()){
 
+            }
+            prefEdit.putBoolean("notifyState", (state == 1));
+            prefEdit.apply();
         });
-
-
 
     }
 

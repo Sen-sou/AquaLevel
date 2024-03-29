@@ -13,9 +13,12 @@ import androidx.fragment.app.FragmentManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.datepicker.CalendarConstraints;
 import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
 import com.watertank.aqualevel.R;
+import com.watertank.aqualevel.networkService.DataListener;
+import com.watertank.aqualevel.networkService.NetworkClientService;
 import com.watertank.aqualevel.sensordataroom.DatabaseExecutorService;
 import com.watertank.aqualevel.sensordataroom.SensorData;
 import com.watertank.aqualevel.sensordataroom.SensorDataDao;
@@ -56,11 +59,22 @@ public class WaterGraphCard {
     private WaterGraphView waterGraphView;
     private RadioGroup graphTime;
 
-    public WaterGraphCard(Context context, FragmentManager fragmentManager, View card, SensorDataDatabase database) {
+    // Network Resources
+    private NetworkClientService networkClientService;
+    private HashMap<String, DataListener> serverDataListeners;
+    private HashMap<String, DataListener> directDataListeners;
+    private LinearProgressIndicator progressIndicator;
+
+    public WaterGraphCard(Context context, FragmentManager fragmentManager, View card,
+                          HashMap<String, DataListener> dataListeners, HashMap<String,
+                          DataListener> directDataListeners, LinearProgressIndicator progress) {
         this.context = context;
         this.fragmentManager = fragmentManager;
         this.card = card;
         this.databaseService = DatabaseExecutorService.getInstance(context);
+        this.serverDataListeners = dataListeners;
+        this.directDataListeners = directDataListeners;
+        this.progressIndicator = progress;
     }
 
     public void init() {
@@ -72,8 +86,6 @@ public class WaterGraphCard {
         clockButton.setVisibility(View.GONE);
 
         calendarConstraintsBuilder = new CalendarConstraints.Builder();
-        startDate = Calendar.getInstance();
-        endDate = Calendar.getInstance();
         validLookup = new HashMap<>();
         buildCalender();
         buildClock();
@@ -99,14 +111,49 @@ public class WaterGraphCard {
                     break;
             }
         });
+
+        progressIndicator.hide();
+        serverDataListeners.put("historySync", received -> {
+            int sensorLogSize = Integer.parseInt(received.substring(0, received.indexOf("/")));
+            received = received.substring(received.indexOf("/") + 1);
+            int lastReadByte = Integer.parseInt(received.substring(0, received.indexOf("/")));
+            received = received.substring(received.indexOf("/") + 1);
+            databaseService.saveDataHistory(received);
+
+            if (lastReadByte == 0) return;
+            if (!progressIndicator.isShown()) {
+                progressIndicator.setProgress(0);
+                progressIndicator.show();
+            }
+            progressIndicator.setProgressCompat((int) (((float) lastReadByte / (float) sensorLogSize) * 100.0f), true);
+            if (lastReadByte == sensorLogSize) {
+                progressIndicator.hide();
+                buildCalender();
+            }
+        });
+
+        directDataListeners.put("invalidateGraph", received -> {
+            if (received.equalsIgnoreCase("1")) {
+                waterGraphView.clearGraph();
+                buildCalender();
+                selectedDate = null;
+                selectedHour = null;
+                dateButton.setText("Date");
+                clockButton.setText("Time");
+            }
+        });
+
     }
 
     protected void buildCalender() {
-        // Get Valid Dates from database
-//        validDates = new ArrayList<>(databaseService.getDates());
+
         validDates = (ArrayList<SensorDate>) databaseService.getDates();
+        validLookup.clear();
+        startDate = Calendar.getInstance();
+        endDate = Calendar.getInstance();
 
         if (validDates.size() > 0) {
+
             // Set Extreme dates
             startDate.set(validDates.get(0).getYear(),
                     validDates.get(0).getMonth() - 1,
@@ -152,6 +199,8 @@ public class WaterGraphCard {
             public void writeToParcel(@NonNull Parcel dest, int flags) {}
         };
 
+        Log.d("Calendar", "buildCalender: " + endDate.get(Calendar.MONTH));
+
         // Build Constraint
         calendarConstraintsBuilder
                 .setOpenAt(endDate.getTimeInMillis())
@@ -187,6 +236,7 @@ public class WaterGraphCard {
             dateButton.setEnabled(false);
             datePicker.show(fragmentManager, "MATERIAL_DATE_PICKER");
         });
+
     }
 
     protected void buildClock() {
@@ -307,6 +357,10 @@ public class WaterGraphCard {
             data = getHourDataList(sensorData);
         }
         waterGraphView.setYAxisValues(data);
+    }
+
+    public void setNetworkServiceObject(NetworkClientService networkClientService) {
+        this.networkClientService = networkClientService;
     }
 }
 
