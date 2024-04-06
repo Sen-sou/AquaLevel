@@ -144,12 +144,18 @@ public class DatabaseExecutorService {
 
     public static void shutDownService() {
         try {
+            executorService.shutdown();
             if (!executorService.awaitTermination(500, TimeUnit.MILLISECONDS)) {
-                executorService.shutdown();
+                executorService.shutdownNow();
             }
         } catch (InterruptedException e) {
             executorService.shutdownNow();
             e.printStackTrace();
+        } finally {
+            executorService = null;
+            dao = null;
+            INSTANCE = null;
+            Log.d("MAIN_APP", "shutDownService: ");
         }
     }
 }

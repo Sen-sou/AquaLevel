@@ -128,7 +128,8 @@
                                 android:text="@string/water_level"
                                 android:textAlignment="center"
                                 android:textColor="@color/cardtitle"
-                                android:textSize="20sp" />
+                                android:textSize="20sp"
+                                />
 
                             <TextView
                                 android:id="@+id/waterPercentage"
@@ -140,7 +141,7 @@
                                 android:text="0%"
                                 android:textAlignment="center"
                                 android:textColor="@color/cardtitle"
-                                android:textSize="50sp"
+                                android:textSize="40sp"
                                 android:textStyle="bold" />
 
                             <com.google.android.material.divider.MaterialDivider
@@ -385,6 +386,35 @@
                             android:layout_weight="1"
                             android:text="Clear History"
                             android:textColor="@color/card"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginVertical="5dp"
+                            android:fontFamily="sans-serif-thin"
+                            android:text="Safe Level"
+                            android:layout_marginEnd="5dp"
+                            android:textColor="@color/cardtitle"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <com.google.android.material.slider.RangeSlider
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/safeLevelRange"
+                            app:values="@array/initial_slider_values"
+                            android:valueFrom="0"
+                            android:valueTo="100"
+                            style="@style/aqua.rangeSlider"
+                            />
 
                     </LinearLayout>
 

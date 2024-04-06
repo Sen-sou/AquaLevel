@@ -2,20 +2,27 @@ package com.watertank.aqualevel.viewcomponents;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.materialswitch.MaterialSwitch;
+import com.google.android.material.slider.RangeSlider;
 import com.google.android.material.textview.MaterialTextView;
 import com.watertank.aqualevel.R;
 import com.watertank.aqualevel.networkService.NetworkClientService;
 import com.watertank.aqualevel.sensordataroom.DatabaseExecutorService;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class PreferenceCard {
 
@@ -23,11 +30,15 @@ public class PreferenceCard {
     private final View card;
     private final DatabaseExecutorService databaseService;
 
+    // Components
     private MaterialSwitch syncSwitch, alarmSwitch;
     private MaterialButton updateButton, deleteButton;
     private MaterialAlertDialogBuilder dialogBuilder;
     private MaterialTextView intervalTxt;
     private PopupMenu intervalMenu;
+    private RangeSlider safeRangeSlider;
+
+    // Dependencies
     private NetworkClientService networkClientService;
     private SharedPreferences preferences;
     private SharedPreferences.Editor prefEdit;
@@ -37,6 +48,8 @@ public class PreferenceCard {
     private int lastReadByte;
     private boolean alarmNotification;
     private boolean autoSyncHistory;
+    private float safeMin;
+    private float safeMax;
 
 
     public PreferenceCard(Context context, View card) {
@@ -53,12 +66,15 @@ public class PreferenceCard {
         alarmSwitch = card.findViewById(R.id.alarmSwitch);
         updateButton = card.findViewById(R.id.updateBtn);
         deleteButton = card.findViewById(R.id.deleteBtn);
+        safeRangeSlider = card.findViewById(R.id.safeLevelRange);
 
         // Get Saved Values
         updateInterval = preferences.getInt("dataGetInterval", 1);
         lastReadByte = preferences.getInt("lastReadByte", 0);
         alarmNotification = preferences.getBoolean("alarmNotifyState", false);
         autoSyncHistory = preferences.getBoolean("autoSyncState", false);
+        safeMin = preferences.getFloat("safeLevelMin", 5.0f);
+        safeMax = preferences.getFloat("safeLevelMax", 90.0f);
 
         // Interval Selector
         intervalTxt.setText(updateInterval + " SEC");
@@ -112,9 +128,31 @@ public class PreferenceCard {
                         Toast.makeText(context, "History Cleared", Toast.LENGTH_SHORT).show();
                         networkClientService.addRequest("<setConfig/lastReadByte:0>");
                         networkClientService.sendInMessage("<invalidateGraph/1>");
+                        prefEdit.putInt("lastReadByte", 0);
+                        prefEdit.apply();
                     }
                 });
         deleteButton.setOnClickListener(v -> dialogBuilder.show());
+
+        // Safe Level Range Select
+        safeRangeSlider.setValues(Arrays.asList(safeMin, safeMax));
+        safeRangeSlider.addOnSliderTouchListener(new RangeSlider.OnSliderTouchListener() {
+            @Override
+            public void onStartTrackingTouch(@NonNull RangeSlider slider) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(@NonNull RangeSlider slider) {
+                List<Float> values = slider.getValues();
+                safeMin = values.get(0);
+                safeMax = values.get(1);
+                networkClientService.setSafeMinMax(safeMin, safeMax);
+                prefEdit.putFloat("safeLevelMin", safeMin);
+                prefEdit.putFloat("safeLevelMax", safeMax);
+                prefEdit.apply();
+            }
+        });
 
     }
 

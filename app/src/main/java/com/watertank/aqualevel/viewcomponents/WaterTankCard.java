@@ -28,9 +28,7 @@ import java.util.Locale;
 public class WaterTankCard {
 
     private final Context context;
-//    private final ArrayList<DataListener> serverDataListeners;
-//    private final ArrayList<DataListener> serverDirectDataListeners;
-    private HashMap<String, DataListener> serverDataListeners, serverDirectDataListeners;
+    private DataListener serverDataListeners, serverDirectDataListeners;
     private final View card;
 
     private NetworkClientService networkClientService;
@@ -50,7 +48,8 @@ public class WaterTankCard {
     private boolean notifyCheck;
 
 
-    public WaterTankCard(Context context, View rootView, HashMap<String, DataListener> dataListeners, HashMap<String, DataListener> directDataListeners) {
+    public WaterTankCard(Context context, View rootView, DataListener dataListeners,
+                         DataListener directDataListeners) {
         this.context = context;
         this.card = rootView;
         this.serverDataListeners = dataListeners;
@@ -84,18 +83,18 @@ public class WaterTankCard {
         serverConnecting = (AnimationDrawable) ResourcesCompat.getDrawable(
                 context.getResources(), R.drawable.wifi_animation, context.getTheme());
 
-        serverDirectDataListeners.put("connectionStatus",
+        serverDirectDataListeners.add("connectionStatus",
                 received -> setServerConnectionStatus(Integer.parseInt(received)));
 
         // Set Tank Level Listener
-        serverDataListeners.put("sensorRead",
-                received -> setWaterPercentage(Float.parseFloat(received)));
+        serverDataListeners.add("sensorRead",
+                received -> setWaterPercentage((81.0f - Float.parseFloat(received)) * 1.2345679f));
 
         // Set Notify Button
         notifyLevelCheckBox.setChecked(notifyCheck);
         notifyLevelCheckBox.addOnCheckedStateChangedListener((checkBox, state) -> {
-            if (networkClientService.getConnectionStatus()){
-
+            if (networkClientService != null && networkClientService.getConnectionStatus()){
+                networkClientService.setAlertState(state == 1);
             }
             prefEdit.putBoolean("notifyState", (state == 1));
             prefEdit.apply();
@@ -131,6 +130,14 @@ public class WaterTankCard {
         if (statusShow) serverConnectButton.setText(serverStatusMessage);
     }
     public void setWaterPercentage(Float percentage) {
+        if (percentage < 0.0f) {
+            waterTankView.setWaterLevel(0.0f);
+            waterPercentage.setText("err");
+            return;
+        } else if (percentage > 100.0f) {
+            waterTankView.setWaterLevel(0.0f);
+            waterPercentage.setText("100+%");
+        }
         waterTankView.setWaterLevel(percentage);
         waterPercentage.setText(String.format(Locale.getDefault(), "%.1f%%", percentage));
     }
