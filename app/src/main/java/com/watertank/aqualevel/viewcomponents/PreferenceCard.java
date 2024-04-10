@@ -108,7 +108,7 @@ public class PreferenceCard {
         // Notify by Alarm
         alarmSwitch.setChecked(alarmNotification);
         alarmSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-
+            networkClientService.setAlarmState(isChecked);
             prefEdit.putBoolean("alarmNotifyState", isChecked);
             prefEdit.apply();
         });

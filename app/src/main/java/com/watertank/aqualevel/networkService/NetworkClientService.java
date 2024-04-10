@@ -2,6 +2,7 @@ package com.watertank.aqualevel.networkService;
 
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -59,7 +60,8 @@ public class NetworkClientService extends Service {
     public static final String START = "NETWORK_SERVICE_START";
     public static final String STOP = "NETWORK_SERVICE_STOP";
     public static final String RELINK = "NETWORK_SERVICE_RELINK";
-    public static final String ALERT = "NETWORK_SERVICE_ALERT";
+    public static final String ALARM_START = "NETWORK_SERVICE_ALARM_START";
+    public static final String ALARM_STOP = "NETWORK_SERVICE_ALARM_STOP";
 
 
     private DataListener dataListeners, directDataListeners;
@@ -89,13 +91,18 @@ public class NetworkClientService extends Service {
     private float safeMax;
 
     // Notification Resources
-
     private NotificationManager notificationManager;
     private Notification statusNotification;
     private Notification alertNotification;
     private boolean alertState;
+    private AlarmManager alarmManager;
+    private boolean alarmState;
+    private boolean alarmTriggerState = false;
+    private PendingIntent alarmIntent;
     private RemoteViews notificationLayout, notificationLayoutExpanded, alertLayout;
     public static boolean mainAlive = true;
+
+
 
     public class ClientServiceBinder extends Binder {
         public NetworkClientService getService() {
@@ -123,6 +130,10 @@ public class NetworkClientService extends Service {
 
     public void setAlertState(boolean state) {
         this.alertState = state;
+    }
+
+    public void setAlarmState(boolean state) {
+        this.alarmState = state;
     }
 
     public NetworkClientService setConnectionTimeout(int timeout) {
@@ -185,6 +196,7 @@ public class NetworkClientService extends Service {
         safeMin = preferences.getFloat("safeLevelMin", 5.0f);
         safeMax = preferences.getFloat("safeLevelMax", 90.0f);
         alertState = preferences.getBoolean("notifyState", false);
+        alarmState = preferences.getBoolean("alarmNotifyState", false);
 
         mainHandler = new Handler(Looper.getMainLooper()) {
             @Override
@@ -256,16 +268,25 @@ public class NetworkClientService extends Service {
         setupViewIntents();
 
         Notification.Action dummyAction = new Notification.Action.Builder(
-                R.drawable.notconnected_icon, "",null).build();
+                R.drawable.aqua_notification, "",null).build();
 
+        // Alarm
+        alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        alarmIntent = PendingIntent.getBroadcast(
+                this,
+                202,
+                new Intent(this, AlarmReceiver.class)
+                        .setAction(ALARM_START),
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
         Notification.Action dismissAction = new Notification.Action.Builder(
-                R.drawable.notconnected_icon,
+                R.drawable.aqua_notification,
                 "DISMISS",
-                PendingIntent.getService(
+                PendingIntent.getBroadcast(
                         this,
                         201,
-                        new Intent(this, NetworkClientService.class)
-                                .setAction(ALERT),
+                        new Intent(this, AlarmReceiver.class)
+                                .setAction(ALARM_STOP),
                         PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
                 )
         ).build();
@@ -274,10 +295,9 @@ public class NetworkClientService extends Service {
                 .setOngoing(true)
                 .setCustomContentView(notificationLayout)
                 .setCustomBigContentView(notificationLayoutExpanded)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.drawable.aqua_notification)
                 .addAction(dummyAction)
                 .setColor(Color.argb(255, 1, 135, 134))
-                .setShowWhen(false)
                 .setOnlyAlertOnce(true)
                 .build();
 
@@ -287,10 +307,15 @@ public class NetworkClientService extends Service {
                 .setCustomContentView(alertLayout)
                 .setCustomBigContentView(alertLayout)
                 .setCustomHeadsUpContentView(alertLayout)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.drawable.aqua_notification)
                 .setColor(Color.argb(255, 1, 135, 134))
-                .setShowWhen(true)
-                .addAction(dismissAction)
+                .setContentIntent(PendingIntent.getBroadcast(
+                        this,
+                        201,
+                        new Intent(this, AlarmReceiver.class)
+                                .setAction(ALARM_STOP),
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+                ))
                 .build();
 
         startForeground(NOTIFICATION_ID, statusNotification, FOREGROUND_SERVICE_TYPE_DATA_SYNC);
@@ -392,8 +417,19 @@ public class NetworkClientService extends Service {
             alertLayout.setTextViewText(R.id.notification_alert_content, "The Water is Below Safe Level");
         } else if (level > safeMax) {
             alertLayout.setTextViewText(R.id.notification_alert_content, "The Water is Above Safe Level");
-        } else return;
+        } else {
+            alarmTriggerState = false;
+            return;
+        }
         notificationManager.notify(NOTIFICATION_ALERT_ID, alertNotification);
+        if (alarmState && !alarmTriggerState) {
+            alarmManager.set(
+                    AlarmManager.RTC_WAKEUP,
+                    System.currentTimeMillis() + 500,
+                    alarmIntent
+            );
+            alarmTriggerState = true;
+        }
     }
 
     @Override
@@ -453,7 +489,7 @@ public class NetworkClientService extends Service {
             }
             if (response.toString().endsWith(">\n")) {
                 responseList.add(response.toString());
-                Log.d("CLIENT", "readServer: " + response);
+//                Log.d("CLIENT", "readServer: " + response);
                 response.setLength(0);
                 if (!processFlag) {
                     mainHandler.sendMessage(Message.obtain(mainHandler, 1));
