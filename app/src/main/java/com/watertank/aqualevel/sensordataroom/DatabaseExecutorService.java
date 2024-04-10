@@ -6,6 +6,7 @@ import android.util.Log;
 
 import androidx.room.Room;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -19,10 +20,13 @@ public class DatabaseExecutorService {
     private static volatile DatabaseExecutorService INSTANCE;
     private static volatile ExecutorService executorService;
     private static volatile SensorDataDao dao;
+    private ArrayList<SensorData> dataList;
 
     private DatabaseExecutorService(Context context) {
         executorService = Executors.newSingleThreadExecutor();
-        dao = SensorDataDatabase.getInstance(context.getApplicationContext()).sensorDataDao();    }
+        dao = SensorDataDatabase.getInstance(context.getApplicationContext()).sensorDataDao();
+        dataList = new ArrayList<>();
+    }
 
     public static DatabaseExecutorService getInstance(Context context) {
         if (INSTANCE == null) {
@@ -34,7 +38,6 @@ public class DatabaseExecutorService {
         }
         return INSTANCE;
     }
-
 
 
     private boolean runExceptionCheck(Future<Boolean> future) {
@@ -91,6 +94,30 @@ public class DatabaseExecutorService {
         return runExceptionCheck(executorService.submit(insertTask));
     }
 
+    public boolean saveDataHistory(String history) { // check for empty string
+        Callable<Boolean> insertAllTask = () -> {
+            Log.d("Database service", "saveDataHistory: This ran");
+            dataList.clear();
+            String[] historyData = history.split("\n");
+            for (String data : historyData) {
+                if (data.equalsIgnoreCase("mm:hh:dD:MM:YYYY:0000")) continue;
+//                Log.d("Database Service", "saveDataHistory: " + data);
+                String[] extract = data.split(":");
+                dataList.add(new SensorData(
+                        Integer.parseInt(extract[0]),
+                        Integer.parseInt(extract[1]),
+                        Integer.parseInt(extract[2]),
+                        Integer.parseInt(extract[3]),
+                        Integer.parseInt(extract[4]),
+                        Float.parseFloat(extract[5])
+                ));
+            }
+            dao.insertAll(dataList);
+            return true;
+        };
+        return runExceptionCheck(executorService.submit(insertAllTask));
+    }
+
     public boolean delete(SensorData sensorData) {
         Callable<Boolean> deleteTask = () -> {
             dao.delete(sensorData);
@@ -117,12 +144,18 @@ public class DatabaseExecutorService {
 
     public static void shutDownService() {
         try {
+            executorService.shutdown();
             if (!executorService.awaitTermination(500, TimeUnit.MILLISECONDS)) {
-                executorService.shutdown();
+                executorService.shutdownNow();
             }
         } catch (InterruptedException e) {
             executorService.shutdownNow();
             e.printStackTrace();
+        } finally {
+            executorService = null;
+            dao = null;
+            INSTANCE = null;
+            Log.d("MAIN_APP", "shutDownService: ");
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.watertank.aqualevel.viewcomponents;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Handler;
@@ -21,13 +22,13 @@ import com.watertank.aqualevel.networkService.DataListener;
 import com.watertank.aqualevel.networkService.NetworkClientService;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
 
 public class WaterTankCard {
 
     private final Context context;
-    private final ArrayList<DataListener> serverDataListeners;
-    private final ArrayList<DataListener> serverDirectDataListeners;
+    private DataListener serverDataListeners, serverDirectDataListeners;
     private final View card;
 
     private NetworkClientService networkClientService;
@@ -42,12 +43,19 @@ public class WaterTankCard {
     private TextView waterPercentage;
     private MaterialCheckBox notifyLevelCheckBox;
 
+    private SharedPreferences preferences;
+    private SharedPreferences.Editor prefEdit;
+    private boolean notifyCheck;
 
-    public WaterTankCard(Context context, View rootView, ArrayList<DataListener> dataListeners, ArrayList<DataListener> directDataListeners) {
+
+    public WaterTankCard(Context context, View rootView, DataListener dataListeners,
+                         DataListener directDataListeners) {
         this.context = context;
         this.card = rootView;
         this.serverDataListeners = dataListeners;
         this.serverDirectDataListeners = directDataListeners;
+        this.preferences = context.getSharedPreferences("Aqua_Client", Context.MODE_PRIVATE);
+        this.prefEdit = this.preferences.edit();
     }
 
     public void init() {
@@ -56,8 +64,10 @@ public class WaterTankCard {
         waterPercentage = card.findViewById(R.id.waterPercentage);
         notifyLevelCheckBox = card.findViewById(R.id.notifyLevelChkBox);
 
+        notifyCheck = preferences.getBoolean("notifyState", false);
 
-        // Set Server Status Button
+
+        // Set Server Status
         serverStatusMessage = "Couldn't Connect to Server";
         statusShow = false;
         serverConnectButton.setOnClickListener(v -> {
@@ -73,21 +83,22 @@ public class WaterTankCard {
         serverConnecting = (AnimationDrawable) ResourcesCompat.getDrawable(
                 context.getResources(), R.drawable.wifi_animation, context.getTheme());
 
-        serverDirectDataListeners.add(
-                received -> {
-                    if (received.contains("connectionStatus"))
-                        setServerConnectionStatus(
-                                Integer.parseInt(received.substring(received.indexOf('/')+1))
-                        );
-                }
-        );
+        serverDirectDataListeners.add("connectionStatus",
+                received -> setServerConnectionStatus(Integer.parseInt(received)));
+
+        // Set Tank Level Listener
+        serverDataListeners.add("sensorRead",
+                received -> setWaterPercentage((81.0f - Float.parseFloat(received)) * 1.2345679f));
 
         // Set Notify Button
+        notifyLevelCheckBox.setChecked(notifyCheck);
         notifyLevelCheckBox.addOnCheckedStateChangedListener((checkBox, state) -> {
-
+            if (networkClientService != null && networkClientService.getConnectionStatus()){
+                networkClientService.setAlertState(state == 1);
+            }
+            prefEdit.putBoolean("notifyState", (state == 1));
+            prefEdit.apply();
         });
-
-
 
     }
 
@@ -119,6 +130,14 @@ public class WaterTankCard {
         if (statusShow) serverConnectButton.setText(serverStatusMessage);
     }
     public void setWaterPercentage(Float percentage) {
+        if (percentage < 0.0f) {
+            waterTankView.setWaterLevel(0.0f);
+            waterPercentage.setText("err");
+            return;
+        } else if (percentage > 100.0f) {
+            waterTankView.setWaterLevel(0.0f);
+            waterPercentage.setText("100+%");
+        }
         waterTankView.setWaterLevel(percentage);
         waterPercentage.setText(String.format(Locale.getDefault(), "%.1f%%", percentage));
     }

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/interval_1_sec"
+        android:title="1 SEC"
+        />
+    <item
+        android:id="@+id/interval_5_sec"
+        android:title="5 SEC"/>
+    <item
+        android:id="@+id/interval_10_sec"
+        android:title="10 SEC"
+        />
+</menu>

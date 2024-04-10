@@ -1,7 +1,7 @@
 package com.watertank.aqualevel.viewcomponents;
 
 import android.content.Context;
-import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Parcel;
 import android.util.Log;
 import android.view.View;
@@ -13,25 +13,20 @@ import androidx.fragment.app.FragmentManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.datepicker.CalendarConstraints;
 import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
 import com.watertank.aqualevel.R;
+import com.watertank.aqualevel.networkService.DataListener;
+import com.watertank.aqualevel.networkService.NetworkClientService;
 import com.watertank.aqualevel.sensordataroom.DatabaseExecutorService;
 import com.watertank.aqualevel.sensordataroom.SensorData;
-import com.watertank.aqualevel.sensordataroom.SensorDataDao;
-import com.watertank.aqualevel.sensordataroom.SensorDataDatabase;
 import com.watertank.aqualevel.sensordataroom.SensorDate;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.Callable;
-
-import io.reactivex.rxjava3.core.Flowable;
 
 public class WaterGraphCard {
     private final Context context;
@@ -46,7 +41,6 @@ public class WaterGraphCard {
     private Integer selectedHour = null;
     private MaterialButton dateButton, clockButton;
     private CalendarConstraints calendarConstraints;
-//    CalendarConstraints.DateValidator dateValidator;
     private CalendarConstraints.Builder calendarConstraintsBuilder;
     private Calendar startDate, endDate;
     private ArrayList<SensorDate> validDates;
@@ -55,12 +49,29 @@ public class WaterGraphCard {
     // Graph Resources
     private WaterGraphView waterGraphView;
     private RadioGroup graphTime;
+    private final int SELECTED_GRAPH_DAY = 24;
+    private final int SELECTED_GRAPH_HOUR = 60;
+    private int selectedGraphMode;
 
-    public WaterGraphCard(Context context, FragmentManager fragmentManager, View card, SensorDataDatabase database) {
+    // Network Resources
+    private NetworkClientService networkClientService;
+    private DataListener serverDataListeners, serverDirectDataListeners;
+    private LinearProgressIndicator progressIndicator;
+
+
+    private SharedPreferences.Editor prefEdit;
+
+    public WaterGraphCard(Context context, FragmentManager fragmentManager, View card,
+                          DataListener dataListeners, DataListener directDataListeners,
+                          LinearProgressIndicator progress) {
         this.context = context;
         this.fragmentManager = fragmentManager;
         this.card = card;
         this.databaseService = DatabaseExecutorService.getInstance(context);
+        this.serverDataListeners = dataListeners;
+        this.serverDirectDataListeners = directDataListeners;
+        this.progressIndicator = progress;
+        this.prefEdit = context.getSharedPreferences("Aqua_Client", Context.MODE_PRIVATE).edit();
     }
 
     public void init() {
@@ -72,8 +83,6 @@ public class WaterGraphCard {
         clockButton.setVisibility(View.GONE);
 
         calendarConstraintsBuilder = new CalendarConstraints.Builder();
-        startDate = Calendar.getInstance();
-        endDate = Calendar.getInstance();
         validLookup = new HashMap<>();
         buildCalender();
         buildClock();
@@ -81,7 +90,8 @@ public class WaterGraphCard {
             switch (checkedId) {
                 case R.id.dayBtn:
                     clockButton.setVisibility(View.GONE);
-                    waterGraphView.setXAxisSize(24);
+                    selectedGraphMode = SELECTED_GRAPH_DAY;
+                    waterGraphView.setXAxisSize(selectedGraphMode);
                     waterGraphView.clearGraph();
                     if (selectedDate != null) {
                         setGraph(true);
@@ -89,7 +99,8 @@ public class WaterGraphCard {
                     break;
                 case R.id.hourBtn:
                     clockButton.setVisibility(View.VISIBLE);
-                    waterGraphView.setXAxisSize(60);
+                    selectedGraphMode = SELECTED_GRAPH_HOUR;
+                    waterGraphView.setXAxisSize(selectedGraphMode);
                     waterGraphView.clearGraph();
                     if (selectedDate != null && selectedHour != null) {
                         setGraph(false);
@@ -99,14 +110,55 @@ public class WaterGraphCard {
                     break;
             }
         });
+
+        progressIndicator.hide();
+        serverDataListeners.add("historySync", received -> {
+            int sensorLogSize = Integer.parseInt(received.substring(0, received.indexOf("/")));
+            received = received.substring(received.indexOf("/") + 1);
+            int lastReadByte = Integer.parseInt(received.substring(0, received.indexOf("/")));
+            received = received.substring(received.indexOf("/") + 1);
+            databaseService.saveDataHistory(received);
+            prefEdit.putInt("lastReadByte", lastReadByte);
+            prefEdit.apply();
+
+            if (lastReadByte == 0) return;
+            if (!progressIndicator.isShown()) {
+                progressIndicator.setProgress(0);
+                progressIndicator.show();
+            }
+            progressIndicator.setProgressCompat((int) (((float) lastReadByte / (float) sensorLogSize) * 100.0f), true);
+            if (lastReadByte == sensorLogSize) {
+                progressIndicator.hide();
+                resetGraphCard();
+            }
+        });
+
+        serverDirectDataListeners.add("invalidateGraph", received -> {
+            if (received.equalsIgnoreCase("1")) {
+                resetGraphCard();
+            }
+        });
+
+    }
+
+    protected void resetGraphCard() {
+        waterGraphView.clearGraph();
+        buildCalender();
+        selectedDate = null;
+        selectedHour = null;
+        dateButton.setText("Date");
+        clockButton.setText("Time");
     }
 
     protected void buildCalender() {
-        // Get Valid Dates from database
-//        validDates = new ArrayList<>(databaseService.getDates());
+
         validDates = (ArrayList<SensorDate>) databaseService.getDates();
+        validLookup.clear();
+        startDate = Calendar.getInstance();
+        endDate = Calendar.getInstance();
 
         if (validDates.size() > 0) {
+
             // Set Extreme dates
             startDate.set(validDates.get(0).getYear(),
                     validDates.get(0).getMonth() - 1,
@@ -152,6 +204,8 @@ public class WaterGraphCard {
             public void writeToParcel(@NonNull Parcel dest, int flags) {}
         };
 
+        Log.d("Calendar", "buildCalender: " + endDate.get(Calendar.MONTH));
+
         // Build Constraint
         calendarConstraintsBuilder
                 .setOpenAt(endDate.getTimeInMillis())
@@ -187,6 +241,7 @@ public class WaterGraphCard {
             dateButton.setEnabled(false);
             datePicker.show(fragmentManager, "MATERIAL_DATE_PICKER");
         });
+
     }
 
     protected void buildClock() {
@@ -221,7 +276,8 @@ public class WaterGraphCard {
         Float avg = 0.0f;
         for (SensorData data :
                 sensorData) {
-            avg += data.getData();
+            if (data.getData() == 9999) continue;
+            avg += data.getData() / 10.0f;
         }
         Log.d("TAG", "getDayDataList: Avg Value " + (avg / sensorData.size()));
 
@@ -268,11 +324,12 @@ public class WaterGraphCard {
                 for (;data.getMinute() - minute > 1; minute++) {
                     percentageValues.add(null);
                 }
-                percentageValues.add(data.getData());
+                if (data.getData() == 9999) percentageValues.add(null);
+                else percentageValues.add(data.getData() / 10.0f);
                 minute = data.getMinute();
             }
         }
-        percentageValues.add(data.getData());
+        percentageValues.add(data.getData() / 10.0f);
         return percentageValues;
     }
 
@@ -307,6 +364,10 @@ public class WaterGraphCard {
             data = getHourDataList(sensorData);
         }
         waterGraphView.setYAxisValues(data);
+    }
+
+    public void setNetworkServiceObject(NetworkClientService networkClientService) {
+        this.networkClientService = networkClientService;
     }
 }
 
