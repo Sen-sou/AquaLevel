@@ -1,6 +1,6 @@
 # AQUA LEVEL (v1.0)
 
-Aqua Level is an android application designed to access and display water tank level data from the ESP8266 D1 Mini-based AquaLevel [server](https://github.com/Sen-sou/aqualevelServer). This app allows users to monitor water tank levels in real-time provided they are connected to a common network, making it a real convinience for the users to stay updated with their water resource.
+Aqua Level is an android application designed to access and display water tank level data from the ESP8266 D1 Mini-based AquaLevel [server](https://github.com/Sen-sou/aqualevelServer). This app allows users to monitor water tank levels in real-time provided they are connected to a common network with the server, making it a real convinience for the users to stay updated with their water resource.
 
 <img src="https://github.com/user-attachments/assets/f8b46f61-d70e-45a0-91e5-36d1c792a61f" width="500"/>
 
